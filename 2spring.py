@@ -58,7 +58,3 @@ def _output(img_pth, model_pth):
         }
         
         return emotion_object
-
-
-if __name__ == '__main__':
-    main()
