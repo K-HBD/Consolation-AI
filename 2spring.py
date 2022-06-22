@@ -1,6 +1,5 @@
 import numpy as np
 import torch
-from zmq import device
 
 from model import CustomNet
 from PIL import Image
