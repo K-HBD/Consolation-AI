@@ -10,9 +10,10 @@ def _output(img_url, model_pth):
     img_url = requests.get(img_url)  # requests를 이용해 img를 url로 받아온다.
     model = CustomNet()  # CustomNet 모델을 불러온다.
     model_fn = model_pth  # model_pth=best_model.pth를 model_fn에 할당한다.
-    model.load_state_dict(torch.load(model_fn), strict=False)  # model의 weight 값을 model_fn으로 설정한다.
+    device = torch.device('cpu')
+    model.load_state_dict(torch.load(model_fn, device), strict=False)  # model의 weight 값을 model_fn으로 설정한다.
 
-    img = Image.open(img_url.raw)  # img_url을 통해 이미지를 img에 할당한다.
+    img = Image.open(BytesIO(img_url.content))  # img_url을 통해 이미지를 img에 할당한다.
     img = np.array(img)  # img의 dtype을 numpy array로 변경한다.
     img = torch.FloatTensor(img)  # img의 dtype을 tensor로 변경한다.
     img = img.permute(2, 0, 1)  # batch_size와 channel수를 바꾼다.
