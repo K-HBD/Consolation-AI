@@ -3,7 +3,7 @@ import torch
 import requests
 from io import BytesIO
 
-from model import CustomNet
+from .model import CustomNet
 from PIL import Image
 
 def _output(img_url, model_pth):
@@ -28,37 +28,37 @@ def _output(img_url, model_pth):
     # y_hat의 값에 따라 다른 json을 return 한다.
     if y_hat == 0:
         emotion_object = {
-            "angry"
+            "emotion": "angry"
         }
         
         return emotion_object
     elif y_hat == 1:
         emotion_object = {
-            "fear"
+            "emotion": "fear"
         }
         
         return emotion_object
     elif y_hat == 2:
         emotion_object = {
-            "suprised"
+            "emotion": "suprised"
         }
         
         return emotion_object
     elif y_hat == 3:
         emotion_object = {
-            "happy"
+            "emotion": "happy"
         }
         
         return emotion_object
     elif y_hat == 4:
         emotion_object = {
-            "sad"
+            "emotion": "sad"
         }
         
         return emotion_object
     else:
         emotion_object = {
-            "netural"
+            "emotion": "netural"
         }
         
         return emotion_object
