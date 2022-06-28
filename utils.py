@@ -1,13 +1,11 @@
 import numpy as np
 import torch
 import torch.nn as nn
+import cv2
 import matplotlib.pyplot as plt
 import json
 
 from PIL import Image
-
-from model import CustomNet
-from data_loader import EmotionDataset
 
 
 # matplotlib을 통해 이미지를 출력하고, label값을 표시한다.
@@ -20,10 +18,10 @@ def show_img(img, label, num):
 
 
 # test_loader를 이용한 정확도 확인
-def test(model, test_loader, device):
+def test(model, crit, test_dataset, test_loader, device):
     model = model.to(device)
     model.eval()
-    crit = nn.CrossEntropyLoss()
+    correct_cnt = 0
 
     with torch.no_grad():
         for x, y in iter(test_loader):
@@ -31,67 +29,15 @@ def test(model, test_loader, device):
 
             y_hat = model(x)
             
-            correct_cnt = (y.squeeze() == torch.argmax(y_hat, dim=-1)).sum()
-            total_cnt = float(x.size(0))
+            c_cnt = (y.squeeze() == torch.argmax(y_hat, dim=-1)).sum()
+            t_cnt = float(x.size(0))
 
-            accuracy = correct_cnt / total_cnt
+            correct_cnt += c_cnt
+            accuracy = c_cnt / t_cnt
             print("Accuracy: %.4f" % accuracy)
 
-
-# backend 연동을 위한 함수
-def y2backend(img_pth, model_pth, model, device):
-    model = model.to(device)
-    model.load_state_dict(torch.load(model_pth), strict=False)
-    img = Image.open(img_pth)
-    img = np.array(img)
-    img = torch.FloatTensor(img)
-    img = img.permute(2,0,1)
-    img = img.unsqueeze(0)
-    img = img.to(device)
-
-    y_hat = model(img) # output 생성
-    y_hat = torch.argmax(y_hat, dim=-1)
-    y_hat = y_hat.tolist()
-    y_hat = max(y_hat, key=y_hat.count)
-    print(y_hat)
-    y_hat = abs(int(y_hat)) # 나온 값을 절대값 및 int 형으로 변경
-
-    if y_hat == 0:
-        emotion_object = {
-            "angry"
-        }
-        
-        return emotion_object
-    elif y_hat == 1:
-        emotion_object = {
-            "fear"
-        }
-        
-        return emotion_object
-    elif y_hat == 2:
-        emotion_object = {
-            "suprised"
-        }
-        
-        return emotion_object
-    elif y_hat == 3:
-        emotion_object = {
-            "happy"
-        }
-        
-        return emotion_object
-    elif y_hat == 4:
-        emotion_object = {
-            "sad"
-        }
-        
-        return emotion_object
-    else:
-        emotion_object = {
-            "netural"
-        }
-        
-        return emotion_object
+        total_cnt = len(test_dataset)
+        print(f"correct_cnt: {correct_cnt}/{total_cnt}")
 
 
 # train_loss와 train_acc에 대하여 시각화를 해주는 함수
