@@ -1,22 +1,30 @@
 import numpy as np
 import torch
 import requests
+import cv2
+import torchvision.transforms as T
+
 from io import BytesIO
 
 from .model import CustomNet
 from PIL import Image
 
+
 def _output(img_url, model_pth):
     img_url = requests.get(img_url)  # requests를 이용해 img를 url로 받아온다.
     model = CustomNet()  # CustomNet 모델을 불러온다.
     model_fn = model_pth  # model_pth=best_model.pth를 model_fn에 할당한다.
-    device = torch.device('cpu')
+    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+    transform = T.Resize(size=(48, 48)) # img size를 48, 48로 바꾸는 transforms
     model.load_state_dict(torch.load(model_fn, device), strict=False)  # model의 weight 값을 model_fn으로 설정한다.
 
     img = Image.open(BytesIO(img_url.content))  # img_url을 통해 이미지를 img에 할당한다.
     img = np.array(img)  # img의 dtype을 numpy array로 변경한다.
+    if len(img.shape) > 2 and img.shape[2] == 4:
+        img = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
     img = torch.FloatTensor(img)  # img의 dtype을 tensor로 변경한다.
     img = img.permute(2, 0, 1)  # batch_size와 channel수를 바꾼다.
+    img = transform(img) # 받아온 img size의 48, 48로 바꾼다.
     img = img.unsqueeze(0)  # img의 shape 제일 앞에 1차원을 추가한다.
     
     y_hat = model(img)  # 받아온 img를 model에 넣어 결과 값을 y_hat에 할당한다.
