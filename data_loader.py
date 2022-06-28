@@ -97,5 +97,5 @@ def get_loaders():
     test_dataset = EmotionDataset(df_test, test_transform)
     test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False, num_workers=0)
 
-    return train_loader, valid_loader, test_loader
+    return train_loader, train_dataset, valid_loader, valid_dataset, test_loader, test_dataset
     
