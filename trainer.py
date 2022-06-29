@@ -27,13 +27,13 @@ class Trainer():
         valid_accuracy = []
 
         mb = master_bar(range(self.epochs))
+        lowest_loss = np.inf
         
         for epoch in mb:
             correct_train = 0
             train_loss = 0
             correct_valid = 0
             valid_loss = 0
-            lowest_loss = np.inf
 
             self.model.train()
             for x, y in progress_bar(train_loader, parent=mb):
@@ -41,9 +41,9 @@ class Trainer():
                 self.optimizer.zero_grad()
 
                 y_hat = self.model(x)
-                loss = self.crit(y_hat, y.squeeze())
-                train_loss += loss.item()
-                loss.backward()
+                t_loss = self.crit(y_hat, y.squeeze())
+                train_loss += t_loss.item()
+                t_loss.backward()
 
                 self.optimizer.step()
                 self.optimizer.zero_grad()
@@ -58,14 +58,14 @@ class Trainer():
                     x, y = x.to(self.device), y.to(self.device)
                     
                     y_hat = self.model(x)
-                    loss = self.crit(y_hat, y.squeeze())
-                    valid_loss += loss.item()
+                    v_loss = self.crit(y_hat, y.squeeze())
+                    valid_loss += v_loss.item()
 
                     _, pred_idxs = torch.topk(y_hat, 1)
                     correct_valid += torch.eq(y, pred_idxs.squeeze()).sum().item()
 
-                    if lowest_loss >= loss:
-                        lowest_loss = loss
+                    if lowest_loss >= v_loss:
+                        lowest_loss = v_loss
                         best_model = deepcopy(self.model.state_dict())
 
             train_acc = correct_train/len(train_dataset)
@@ -78,5 +78,5 @@ class Trainer():
             train_losses.append(loss_train)
             valid_losses.append(loss_valid)
 
-            print(f"Epoch: {epoch}  train_accuracy: {train_acc}  valid_accuracy: {valid_acc} train_loss: {loss_train} valid_loss: {loss_valid} lowest_loss: {lowest_loss}")
+            print("Epoch: {: d}  train_accuracy: {: .4f}  valid_accuracy: {: .4f} train_loss: {: .4f} valid_loss: {: .4f} lowest_loss: {: .4f}".format(epoch, train_acc, valid_acc, loss_train, loss_valid, lowest_loss))
             self.model.load_state_dict(best_model)
