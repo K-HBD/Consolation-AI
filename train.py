@@ -15,7 +15,7 @@ def main():
     crit = nn.CrossEntropyLoss()
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     model = model.to(device)
-    epochs = 50
+    epochs = 20
 
     # loaders 불러오기
     train_loader, train_dataset, valid_loader, valid_dataset, test_loader, test_dataset = get_loaders()
