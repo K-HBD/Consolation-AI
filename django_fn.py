@@ -66,7 +66,7 @@ def _output(img_url, model_pth):
         return emotion_object
     else:
         emotion_object = {
-            "emotion": "netural"
+            "emotion": "neutral"
         }
         
         return emotion_object
